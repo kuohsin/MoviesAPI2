@@ -1,0 +1,8 @@
+{
+    "name": "Movies API docs",
+    "version": "1.0.0",
+    "description": "Official documentation of the simple moveis API.. built with Node and Express..",
+    "template": {
+        "forceLanguage": "en"
+    }
+}
