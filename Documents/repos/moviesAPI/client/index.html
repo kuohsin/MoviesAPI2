@@ -2,61 +2,59 @@
 <html>
 
 <head>
-    <title>
-        Movies Table
-    </title>
+    <title>Movies Table</title>
     <link rel="stylesheet" href="style.css">
-    <!-- <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> -->
-
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
-    <table> 
-        <tr>
-            <td>
-                <form id="addMovieForm" onsubmit="onFormSubmit(event);" autocomplete="off">
-                    <div>
-                        <label>name</label><label class="validation-error hide" id="NameValidationError">This field is required.</label>
-                        <input type="text" name="name" id="name">
-                    </div>
-                    <div>
-                        <label>genre</label>
-                        <input type="text" name="genre" id="genre">
-                    </div>
-                    <div>
-                        <label>releaseYear</label>
-                        <input type="text" name="releaseYear" id="releaseYear">
-                    </div>
-                    <div>
-                        <label>rating</label>
-                        <input type="text" name="rating" id="rating">
-                    </div>
-                    <div class="form-action-buttons">
-                        <input type="submit" value="Submit">
-                    </div>
-                </form>
-                
-            </td>
-            <td>
-                <table class="list" id="moviesTable">
-                    <thead>
-                        <tr>
-                            <th>movies_id</th>  
-                            <th>name</th>
-                            <th>genre</th>
-                            <th>releaseYear</th>
-                            <th>rating</th>
-                            <th>Actions</th>
-                            
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="moviesTableBody"></tbody>
-                    
-                </table>
-            </td>
-        </tr>
-    </table>
+    <div class="form-container">
+        <form id="addMovieForm" onsubmit="onFormSubmit(event);" autocomplete="off">
+            <div>
+                <label>name</label><label class="validation-error hide" id="NameValidationError">This field is required.</label>
+                <input type="text" name="name" id="name">
+            </div>
+            <div>
+                <label>genre</label>
+                <input type="text" name="genre" id="genre">
+            </div>
+            <div>
+                <label>releaseYear</label>
+                <input type="text" name="releaseYear" id="releaseYear">
+            </div>
+            <div>
+                <label>rating</label>
+                <input type="text" name="rating" id="rating">
+            </div>
+            <div class="form-action-buttons">
+                <input type="submit" value="Submit" id="submitBtn">
+                <!-- The Update button is initially disabled until an edit action is triggered -->
+                <input type="button" value="Update" id="updateBtn" onclick="updateRecord(readFormData())" disabled>
+            </div>
+        </form>
+    </div>
+    
+    <div class="response-container">
+        <div id="response-message"></div> <!-- Place for response messages -->
+    </div>
+
+    <div class="table-container">
+        <table class="list" id="moviesTable">
+            <thead>
+                <tr>
+                    <th>movies_id</th>
+                    <th>name</th>
+                    <th>genre</th>
+                    <th>releaseYear</th>
+                    <th>rating</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="moviesTableBody">
+                <!-- Table rows will be inserted here -->
+            </tbody>
+        </table>
+    </div>
     <script src="script.js"></script>
 </body>
 

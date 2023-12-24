@@ -7,8 +7,10 @@
     "test": "test"
   },
   "scripts": {
-    "test": "jest",
-    "docs": "apidoc -i app/ -o apidoc/"
+    "test.backend": "jest",
+    "testcafe": "testcafe chrome test/testcafe.js",
+    "docs": "apidoc -i app/ -o apidoc/",
+    "test": "npm run test:backend && npm run test:frontend"
   },
   "author": "",
   "license": "ISC",
@@ -16,5 +18,8 @@
     "axios": "^1.6.2",
     "cors": "^2.8.5",
     "supertest": "^6.3.3"
+  },
+  "devDependencies": {
+    "testcafe": "^3.4.0"
   }
 }

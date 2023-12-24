@@ -1,12 +1,9 @@
 var selectedRow = null
 
-function onFormSubmit(event) {
-    event.preventDefault(); 
-    var formData = new FormData(document.getElementById('addMovieForm'));
 
+function getMovieList() {
     fetch('http://localhost:3000/movies', {
-        method: 'POST',
-        body: formData
+        method: 'GET'
     })
     .then(response => {
         if(response.ok) {
@@ -14,39 +11,161 @@ function onFormSubmit(event) {
         }
         throw new Error('Network response was not ok.');
     })
-    .then(data => {
-        console.log('Success:', data);
-        refreshMovieList(); 
-        // resetForm();
-        // Additional code to handle success, like updating the UI
+    .then(movies => {
+        console.log('Movies fetched successfully:', movies);
+        const tableBody = document.getElementById('moviesTableBody');
+        tableBody.innerHTML = ''; // Clear the table body
+
+        // Populate the table with movies
+        movies.forEach((movie) => {
+            insertNewRecord(movie);
+        });
     })
     .catch(error => {
         console.error('Error:', error);
     });
 }
 
-function editMovie() {
-    if (selectedRow) {
-        const movies_id = selectedRow.cells[0].innerText;
-        const movieData = readFormData();
+// Call getMovieList when the page loads
+// document.addEventListener('DOMContentLoaded', getMovieList);
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById("updateBtn").disabled = true; // Disable the update button
+    getMovieList(); // Then load the movie list
+});
 
-        fetch(`http://localhost:3000/movies/${movies_id}`, {
+
+
+// function onFormSubmit(event) {
+//     event.preventDefault(); 
+//     var formData = new FormData(document.getElementById('addMovieForm'));
+
+//     fetch('http://localhost:3000/movies', {
+//         method: 'POST',
+//         body: formData
+//     })
+//     .then(response => {
+//         if(response.ok) {
+//             return response.json();
+//         }
+//         throw new Error('Network response was not ok.');
+//     })
+//     .then(data => {
+//         console.log('Success:', data);
+//         refreshMovieList(); 
+//         // resetForm();
+//         // Additional code to handle success, like updating the UI
+//     })
+//     .catch(error => {
+//         console.error('Error:', error);
+//     });
+// }
+
+
+
+function onFormSubmit(event) {
+    event.preventDefault(); 
+    var formData = readFormData(); // Assuming readFormData() returns an object with form data
+
+    if (selectedRow == null) {
+        // POST request to add a new movie
+        fetch('http://localhost:3000/movies', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        // .then(handleResponse)
+        // .then(() => refreshMovieList())
+        // .catch(error => console.error('Error:', error));
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data)
+            document.getElementById('response-message').innerText = 'Movie added successfully';
+            refreshMovieList();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('response-message').innerText = 'Failed to add movie';
+        });
+
+    } else {
+        // PUT request to update an existing movie
+        fetch(`http://localhost:3000/movies/${selectedRow.cells[0].innerText}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(movieData),
+            body: JSON.stringify(formData)
         })
         .then(response => response.json())
         .then(data => {
-            console.log(data);
+            console.log('Success:', data)
+            document.getElementById('response-message').innerText = 'Movie updated successfully';
             refreshMovieList();
-            resetForm();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('response-message').innerText = 'Failed to update movie';
+        });
+
+        // .then(handleResponse)
+        // .then(() => refreshMovieList())
+        // .catch(error => console.error('Error:', error));
+    }
+}
+
+function handleResponse(response) {
+    if(response.ok) {
+        return response.json();
+    }
+    throw new Error('Network response was not ok.');
+}
+
+// function editMovie() {
+//     if (selectedRow) {
+//         const movies_id = selectedRow.cells[0].innerText;
+//         const movieData = readFormData();
+
+//         fetch(`http://localhost:3000/movies/${movies_id}`, {
+//             method: 'PUT',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//             body: JSON.stringify(movieData),
+//         })
+//         .then(response => response.json())
+//         .then(data => {
+//             console.log(data);
+//             refreshMovieList();
+//             resetForm();
+//         })
+//         .catch(error => console.error('Error:', error));
+//     } else {
+//         console.error('No row selected for editing.');
+//     }
+// }
+
+function editMovie(movieId) {
+    // Fetch the data for the movie with movieId
+    fetch(`http://localhost:3000/movies/${movieId}`)
+        .then(response => response.json())
+        .then(data => {
+            const movie = data[0]; // Assuming the response is an array with one movie object
+            // Populate form fields
+            document.getElementById("name").value = movie.name;
+            document.getElementById("genre").value = movie.genre;
+            document.getElementById("releaseYear").value = movie.releaseYear;
+            document.getElementById("rating").value = movie.rating;
+            
+            // Store the ID of the movie being edited
+            selectedRow = movieId;
+            
+            // Enable the update button, disable the submit button
+            document.getElementById("submitBtn").disabled = true;
+            document.getElementById("updateBtn").disabled = false;
         })
         .catch(error => console.error('Error:', error));
-    } else {
-        console.error('No row selected for editing.');
-    }
 }
   
   
@@ -63,10 +182,12 @@ function editMovie() {
     })
     .then(data => {
       console.log('Success:', data);
+      document.getElementById('response-message').innerText = 'Movie deleted successfully';
       refreshMovieList();
     })
     .catch(error => {
       console.error('Error:', error);
+      document.getElementById('response-message').innerText = 'Failed to delete movie';
     });
   }
   
@@ -75,7 +196,7 @@ function editMovie() {
 
 function readFormData() {
     var formData = {};
-    formData["movies_id"] = document.getElementById("movies_id").value;
+    // formData["movies_id"] = document.getElementById("movies_id").value;
     formData["name"] = document.getElementById("name").value;
     formData["genre"] = document.getElementById("genre").value;
     formData["releaseYear"] = document.getElementById("releaseYear").value;
@@ -94,45 +215,80 @@ function insertNewRecord(data) {
     newRow.insertCell(3).innerText = data.releaseYear;
     newRow.insertCell(4).innerText = data.rating;
     newRow.insertCell(5).innerHTML = `<button onclick="editMovie(${data.movies_id})">Edit</button>
-                                        <button onclick="deleteMovie(${data.movies_id})">Delete</button>`;
+    <button onclick="deleteMovie(${data.movies_id})" id="deleteBtn-${data.movies_id}">Delete</button>`;
 }
 
 
 
 function onEdit(td) {
     selectedRow = td.parentElement.parentElement;
-    document.getElementById("movies_id").value = selectedRow.cells[0].innerText; // Use innerText instead of innerHTML
+    // document.getElementById("movies_id").value = selectedRow.cells[0].innerText; // Use innerText instead of innerHTML
     document.getElementById("name").value = selectedRow.cells[1].innerText;
     document.getElementById("genre").value = selectedRow.cells[2].innerText;
     document.getElementById("releaseYear").value = selectedRow.cells[3].innerText;
     document.getElementById("rating").value = selectedRow.cells[4].innerText;
+    document.getElementById("submitBtn").disabled = true;
+    document.getElementById("updateBtn").disabled = false;
 }
 
-function updateRecord(formData) {
-    selectedRow.cells[0].innerText = formData.movies_id;
-    selectedRow.cells[1].innerText = formData.name;
-    selectedRow.cells[2].innerText = formData.genre;
-    selectedRow.cells[3].innerText = formData.releaseYear;
-    selectedRow.cells[4].innerText = formData.rating;
+
+function updateRecord() {
+    var formData = readFormData(); // Assuming readFormData() correctly gathers form data
+
+    // PUT request to update an existing movie
+    fetch(`http://localhost:3000/movies/${selectedRow}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        }
+        throw new Error('Network response was not ok.');
+    })
+    .then(data => {
+        console.log('Update successful:', data);
+        document.getElementById('response-message').innerText = 'Movie updated successfully';
+        refreshMovieList();
+        resetForm();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
 }
 
+
+
+// function resetForm() {
+//     // document.getElementById("movies_id").value = "";
+//     document.getElementById("name").value = "";
+//     document.getElementById("genre").value = "";
+//     document.getElementById("releaseYear").value = "";
+//     document.getElementById("rating").value = "";
+//     selectedRow = null;
+// }
 
 function resetForm() {
-    document.getElementById("movies_id").value = "";
-    document.getElementById("name").value = "";
-    document.getElementById("genre").value = "";
-    document.getElementById("releaseYear").value = "";
-    document.getElementById("rating").value = "";
+    // Reset the form fields
+    document.getElementById('addMovieForm').reset();
+    // Clear the selected row
     selectedRow = null;
+    document.getElementById("submitBtn").disabled = false; //added
+    document.getElementById("updateBtn").disabled = true; //added
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    getMovieList();
+    resetForm(); // This will set the correct initial state for your buttons
+});
 
 
 
 function onDelete(td) {
     if (confirm('Are you sure to delete this record ?')) {
         row = td.parentElement.parentElement;
-        document.getElementById("MoviesTable").deleteRow(row.rowIndex);
+        document.getElementById("moviesTable").deleteRow(row.rowIndex);
         resetForm();
     }
 }
